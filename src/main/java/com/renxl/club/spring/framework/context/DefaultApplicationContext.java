@@ -154,6 +154,10 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
             e.printStackTrace();
         }
 
+        // 实现aware
+        if(instance instanceof ApplicationContextAware){
+            ((ApplicationContextAware) instance).setApplicationContext(this);
+        }
         return instance;
 
     }
