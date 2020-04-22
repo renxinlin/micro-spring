@@ -3,6 +3,7 @@ package com.renxl.club.spring.framework.bean.support;
 import com.renxl.club.spring.framework.bean.BeanDefinition;
 import com.renxl.club.spring.framework.core.BeanFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,7 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class DefaultListableBeanFactory implements BeanFactory {
 
-    private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String, BeanDefinition>();
+    protected final Map<String,  BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String, BeanDefinition>();
 
 
+    public Map<String, BeanDefinition> getBeanDefinitionMap() {
+        return beanDefinitionMap;
+    }
 }

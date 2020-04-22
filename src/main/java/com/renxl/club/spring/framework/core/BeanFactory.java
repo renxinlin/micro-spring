@@ -6,7 +6,7 @@ package com.renxl.club.spring.framework.core;
  * @Version 1.0.0
  */
 public interface BeanFactory {
-    Object getBean(String beanName) throws Exception;
+    Object getBean(String beanName);
 
-    Object getBean(Class<?> beanClass) throws Exception;
+    Object getBean(Class<?> beanClass);
 }

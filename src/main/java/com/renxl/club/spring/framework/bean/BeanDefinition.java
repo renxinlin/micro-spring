@@ -10,20 +10,20 @@ import lombok.Data;
 @Data
 public class BeanDefinition {
 
-    private static final String SCOPE_SINGLETON = "singleton";
+    public static final String SCOPE_SINGLETON = "singleton";
 
-    private static final String SCOPE_PROTOTYPE = "prototype";
+    public static final String SCOPE_PROTOTYPE = "prototype";
 
 
-    private volatile Object beanClass;
+    private volatile Class beanClass;
     /**
      * 简单类名
      */
-    private String simpleBeanName;
+    private String beanName;
     /**
      * 全限定类名
      */
-    private String beanName;
+    private String referenceBeanName;
 
     private String scope = SCOPE_SINGLETON;
 

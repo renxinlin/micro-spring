@@ -12,6 +12,7 @@ public class BeanWrapper {
 
     public BeanWrapper(Object wrappedInstance){
         this.wrappedInstance = wrappedInstance;
+        this.wrappedClass = wrappedInstance.getClass();
     }
 
     public Object getWrappedInstance(){

@@ -21,17 +21,26 @@ public abstract class AbstractApplicationContext extends
     /**
      * bd 解析器
      */
-    private BeanDefinitionReader reader;
+    protected BeanDefinitionReader reader;
 
     /**
      * 单例的IOC容器缓存
      */
-    private Map<String,Object> singletonCache = new ConcurrentHashMap<String, Object>();
+    protected Map<String,Object> singletonCache = new ConcurrentHashMap<String, Object>();
     /**
      * 封装的ioc单例缓冲
      */
-    private Map<String, BeanWrapper> singletonWrapperCache = new ConcurrentHashMap<String, BeanWrapper>();
+    protected Map<String, BeanWrapper> singletonWrapperCache = new ConcurrentHashMap<String, BeanWrapper>();
 
+    public BeanDefinitionReader getReader() {
+        return reader;
+    }
 
+    public Map<String, Object> getSingletonCache() {
+        return singletonCache;
+    }
 
+    public Map<String, BeanWrapper> getSingletonWrapperCache() {
+        return singletonWrapperCache;
+    }
 }
