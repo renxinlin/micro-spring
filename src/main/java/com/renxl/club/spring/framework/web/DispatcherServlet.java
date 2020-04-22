@@ -1,5 +1,4 @@
 package com.renxl.club.spring.framework.web;
-import	java.util.logging.Logger;
 
 import com.renxl.club.spring.framework.annotation.Controller;
 import com.renxl.club.spring.framework.annotation.RequestMapping;
@@ -9,7 +8,6 @@ import com.renxl.club.spring.framework.bean.support.DefaultListableBeanFactory;
 import com.renxl.club.spring.framework.context.DefaultApplicationContext;
 import com.renxl.club.spring.framework.context.support.ApplicationContext;
 import com.renxl.club.spring.framework.util.JsonUtil;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -20,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -120,7 +117,7 @@ public class DispatcherServlet extends HttpServlet {
     private void return404(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setCharacterEncoding("utf-8");
         resp.setContentType("text/html;charset=UTF-8");
-        String json = "its 404,  by renxl";
+        String json = "its 404,  by renxl|2284057845@qq.com";
         resp.getWriter().write(json);
     }
 
