@@ -81,10 +81,13 @@ public class DispatcherServlet extends HttpServlet {
 
         if(handlerMapping == null){
             return404(req,resp);
+            return;
         }
         HandlerAdapter handlerAdapter = handlerAdapters.get(handlerMapping);
         if(!(handlerAdapter!=null && handlerAdapter.supports(handlerMapping))){
             return404(req,resp);
+            return;
+
 
         }
         ModelAndView mv = handlerAdapter.handle(req, resp, handlerMapping);
@@ -98,8 +101,11 @@ public class DispatcherServlet extends HttpServlet {
         }
         if(mv.isJson()){
             resp.setCharacterEncoding("utf-8");
-            resp.setContentType("text/html;charset=UTF-8");
-            resp.getWriter().write(JsonUtil.object2Json(mv.getData()));
+            resp.setContentType("application/json");
+            Object data = mv.getData();
+            String json = JsonUtil.toJson(data);
+            resp.getWriter().write(json);
+            return;
         }
         //如果ModelAndView不为null，怎么办？
         if(this.viewResolvers.isEmpty()){return;}
@@ -114,7 +120,8 @@ public class DispatcherServlet extends HttpServlet {
     private void return404(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setCharacterEncoding("utf-8");
         resp.setContentType("text/html;charset=UTF-8");
-        resp.getWriter().write(JsonUtil.object2Json("its 404,  by renxl"));
+        String json = "its 404,  by renxl";
+        resp.getWriter().write(json);
     }
 
 

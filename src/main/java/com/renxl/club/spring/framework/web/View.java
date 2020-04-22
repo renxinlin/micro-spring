@@ -29,23 +29,24 @@ public class View {
         RandomAccessFile ra = new RandomAccessFile(this.viewFile,"r");
         String line  = null;
 
-        // 还可以将model的参数值在这里渲染
+        // replaceall为正则 replace不是
         while (null != (line = ra.readLine())){
             String finalLine = line;
-            model.entrySet().forEach(model_key_view ->{
-                String patternLine = finalLine.replaceAll(model_key_view.getKey(),  model_key_view.getValue());
-                sb.append(patternLine);
-            });
+            if(model!=null && model.size() > 0){
+                model.entrySet().forEach(model_key_view ->{
+                    String patternLine = finalLine.replaceAll("\\$\\{" + model_key_view.getKey() + "\\}",
+                            model_key_view.getValue() == null ? "":model_key_view.getValue());
+                    sb.append(patternLine);
+                });
+            }else {
+                sb.append(finalLine);
+            }
         }
-
-
-
         response.setCharacterEncoding("utf-8");
         response.setContentType(DEFULAT_CONTENT_TYPE);
         response.getWriter().write(sb.toString());
 
     }
-
 
 
 }

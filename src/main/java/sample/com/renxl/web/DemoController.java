@@ -20,6 +20,16 @@ public class DemoController {
 
     @RequestMapping("/spring")
     public ModelAndView hispring(@RequestParam("renxl") String renxl) {
+        HashMap<String, String> model = new HashMap<>();
+        model.put("renxl",renxl);
+        return new ModelAndView("renxl",model);
+    }
+
+
+    @RequestMapping("/spring1")
+    public ModelAndView hispring1(@RequestParam("renxl") String renxl) {
+        HashMap<String, String> model = new HashMap<>();
+        model.put("renxl",renxl);
         return new ModelAndView("renxl");
     }
 
