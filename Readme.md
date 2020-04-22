@@ -16,7 +16,7 @@
                             applicationContext 
                    refresh              beanfactory.getbean 
                      |
-                     reader.loaddb
+                     reader.loadbd
 BeanDefinition
 
 
