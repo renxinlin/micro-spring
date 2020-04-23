@@ -11,12 +11,12 @@
                                                      JdkDynamicAopProxy
                                                        |
                                  Proxy.new --------  getproxy       invoke
-
+support封装了通知信息，提供了通知链组成行为
 ----------------------------------------                                |
     GPAdvisedSupport[advised]          |                                |
 aopconfigholder  methodCache  instance |                                |
                                        |         ------------------------
-aopconfig        GPMethodInterceptor --|-- mi
+aopconfig        GPMethodInterceptor --|-- mi 执行通知链
                  before after...       |
 ----------------------------------------
 

@@ -1,5 +1,6 @@
 package com.renxl.club.spring.framework.bean;
 
+import com.renxl.club.spring.framework.aop.annotation.Around;
 import lombok.Data;
 
 /**
@@ -44,6 +45,8 @@ public class BeanDefinition {
     /**
      * 销毁方法名
      */
+
+
     private String destroyMethodName;
     private String description;
 

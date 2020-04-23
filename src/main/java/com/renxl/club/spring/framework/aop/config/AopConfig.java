@@ -10,6 +10,8 @@ import java.util.ArrayList;
 public class AopConfig {
 
     private String pointcut;
+
+
     private String aspectClass;
 
     private String after;

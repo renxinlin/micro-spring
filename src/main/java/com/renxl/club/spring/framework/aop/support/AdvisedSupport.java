@@ -1,5 +1,13 @@
 package com.renxl.club.spring.framework.aop.support;
 
+import com.renxl.club.spring.framework.aop.config.AopConfig;
+import com.renxl.club.spring.framework.aop.config.AopConfigHolder;
+
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 /**
  *
  *
@@ -12,4 +20,74 @@ package com.renxl.club.spring.framework.aop.support;
  * @Version 1.0.0
  */
 public class AdvisedSupport {
+
+    /**
+     * 连接点所属对象的目标类
+     */
+    private Class targetClass;
+
+
+
+    private Map<String, Object> pointCutClassPattern;
+
+
+    /**
+     * 连接点所属对象
+     */
+    private Object target;
+    /**
+     * 封装切面信息
+     */
+    private AopConfigHolder configHolder;
+
+    /**
+     * method和method对应的拦截器链路
+     */
+    private transient Map<Method, List<Object>> methodAndMethodInterceptors;
+
+
+
+
+
+
+
+    public Class getTargetClass() {
+        return targetClass;
+    }
+
+    public void setTargetClass(Class targetClass) {
+        this.targetClass = targetClass;
+    }
+
+    public Map<String, Object> getPointCutClassPattern() {
+        return pointCutClassPattern;
+    }
+
+    public void setPointCutClassPattern(Map<String, Object> pointCutClassPattern) {
+        this.pointCutClassPattern = pointCutClassPattern;
+    }
+
+    public Object getTarget() {
+        return target;
+    }
+
+    public void setTarget(Object target) {
+        this.target = target;
+    }
+
+    public AopConfigHolder getConfigHolder() {
+        return configHolder;
+    }
+
+    public void setConfigHolder(AopConfigHolder configHolder) {
+        this.configHolder = configHolder;
+    }
+
+    public Map<Method, List<Object>> getMethodAndMethodInterceptors() {
+        return methodAndMethodInterceptors;
+    }
+
+    public void setMethodAndMethodInterceptors(Map<Method, List<Object>> methodAndMethodInterceptors) {
+        this.methodAndMethodInterceptors = methodAndMethodInterceptors;
+    }
 }
