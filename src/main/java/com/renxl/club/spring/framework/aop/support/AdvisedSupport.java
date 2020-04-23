@@ -45,9 +45,22 @@ public class AdvisedSupport {
      */
     private transient Map<Method, List<Object>> methodAndMethodInterceptors;
 
-
-
-
+    /**
+     * todo  重新处理
+     * @param method
+     * @param targetClass
+     * @return
+     * @throws NoSuchMethodException
+     */
+    public List<Object> getAllAdvices(Method method, Class<?> targetClass) throws NoSuchMethodException {
+        List<Object> interceptors = methodAndMethodInterceptors.get(method);
+        if(interceptors == null){
+            Method m = targetClass.getMethod(method.getName(),method.getParameterTypes());
+            interceptors = methodAndMethodInterceptors.get(m);
+            this.methodAndMethodInterceptors.put(m,interceptors);
+        }
+        return interceptors;
+    }
 
 
 

@@ -1,5 +1,7 @@
 package com.renxl.club.spring.framework.aop.aoproxy;
+import	java.util.HashMap;
 
+import com.renxl.club.spring.framework.aop.interceptor.MethodInvocation;
 import com.renxl.club.spring.framework.aop.support.AdvisedSupport;
 import net.sf.cglib.core.DebuggingClassWriter;
 import net.sf.cglib.proxy.Enhancer;
@@ -7,6 +9,7 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * @Author renxl
@@ -34,10 +37,19 @@ public class CglibAopProxy implements MethodInterceptor,AopProxy {
 
     }
 
+    /**
+     *        Object object = methodProxy.invokeSuper(o, args);
+     * @param o  代理类
+     * @param method 原生方法
+     * @param args 方法参数
+     * @param methodProxy 目标方法
+     * @return
+     * @throws Throwable
+     */
     @Override
     public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-        //注意这里的方法调用
-        Object object = methodProxy.invokeSuper(o, args);
-        return object;
+        List<Object> interceptors = this.advisedSupport.getAllAdvices(method,this.advisedSupport.getTargetClass());
+        MethodInvocation methodInvocation = new MethodInvocation(method, advisedSupport.getTarget(),args,interceptors,advisedSupport.getTargetClass(),new HashMap());
+        return methodInvocation.proceed();
     }
 }
