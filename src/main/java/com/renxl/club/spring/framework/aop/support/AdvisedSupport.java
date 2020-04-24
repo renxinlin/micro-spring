@@ -1,12 +1,10 @@
 package com.renxl.club.spring.framework.aop.support;
 
-import com.renxl.club.spring.framework.aop.config.AopConfig;
 import com.renxl.club.spring.framework.aop.config.AopConfigHolder;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -27,8 +25,11 @@ public class AdvisedSupport {
     private Class targetClass;
 
 
-
-    private Map<String, Object> pointCutClassPattern;
+    /**
+     * 切入点规则集合 ：目前实现包切人   注解切人
+     * 不支持切人点表达式 //todo 研究下切人点的正则
+     */
+    private List<String> pointCut;
 
 
     /**
@@ -72,12 +73,12 @@ public class AdvisedSupport {
         this.targetClass = targetClass;
     }
 
-    public Map<String, Object> getPointCutClassPattern() {
-        return pointCutClassPattern;
+    public List<String> getPointCut() {
+        return pointCut;
     }
 
-    public void setPointCutClassPattern(Map<String, Object> pointCutClassPattern) {
-        this.pointCutClassPattern = pointCutClassPattern;
+    public void setPointCut(List<String> pointCut) {
+        this.pointCut = pointCut;
     }
 
     public Object getTarget() {

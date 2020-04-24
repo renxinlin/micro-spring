@@ -19,6 +19,10 @@ import java.util.List;
 public class CglibAopProxy implements MethodInterceptor,AopProxy {
     private AdvisedSupport advisedSupport;
 
+    public CglibAopProxy(AdvisedSupport advisedSupport) {
+        this.advisedSupport = advisedSupport;
+    }
+
     @Override
     public Object getProxy() {
         return null;

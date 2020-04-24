@@ -17,11 +17,11 @@ import java.util.List;
 public class JdkAopProxy  implements InvocationHandler,AopProxy {
     private AdvisedSupport advisedSupport;
 
-
+    public JdkAopProxy(AdvisedSupport advisedSupport) {
+        this.advisedSupport = advisedSupport;
+    }
 
     /**
-     * 该方法负责集中处理动态代理类上的所有方法调用。
-     * 调用处理器根据这三个参数进行预处理或分派到委托类实例上反射执行
      *
      * @param proxy  代理类实例
      * @param method 被调用的方法对象

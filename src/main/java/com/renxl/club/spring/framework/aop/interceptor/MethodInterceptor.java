@@ -14,6 +14,6 @@ public interface MethodInterceptor {
      * @return
      * @throws Throwable
      */
-    Object invoke(MethodInvocation invocation) throws Throwable;
+    Object execute(MethodInvocation invocation) throws Throwable;
 
 }

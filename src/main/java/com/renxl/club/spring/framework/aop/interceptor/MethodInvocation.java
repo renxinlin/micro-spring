@@ -3,6 +3,7 @@ package com.renxl.club.spring.framework.aop.interceptor;
 import com.renxl.club.spring.framework.aop.aspect.JoinPoint;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,32 +51,46 @@ public class MethodInvocation implements JoinPoint {
 
 
 
+
     @Override
     public Object getThis() {
-        return null;
+        return this.target;
     }
 
     @Override
     public Object[] getArguments() {
-        return new Object[0];
+        return this.arguments;
     }
 
     @Override
     public Method getMethod() {
-        return null;
+        return this.method;
     }
 
     @Override
     public void setUserAttribute(String key, Object value) {
-
+        if (value != null) {
+            if (this.attributes == null) {
+                this.attributes = new HashMap<String,Object>();
+            }
+            this.attributes.put(key, value);
+        }
+        else {
+            if (this.attributes != null) {
+                this.attributes.remove(key);
+            }
+        }
     }
 
     @Override
     public Object getUserAttribute(String key) {
-        return null;
+        return (this.attributes != null ? this.attributes.get(key) : null);
+
     }
 
     public Object proceed() {
+        // 我们将 handlerinvocation的功能抽象到这里，并采用递归调用的方式直到目标方法和拦截器链全部执行完毕
+
         return null;
     }
 }
