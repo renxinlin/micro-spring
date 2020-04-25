@@ -4,6 +4,11 @@ import java.lang.reflect.Method;
 
 /**
  *
+ *
+ *
+ * 注意目前没有ProceedingJoinPoint
+ * JoinPoint是包含了PJP的能力的
+ * todo 未来会关闭该能力的暴露
  * 定义面向用户的接口
  *
  * @Author renxl

@@ -88,8 +88,49 @@ public class MethodInvocation implements JoinPoint {
 
     }
 
+    /**
+     * 这是spring的aop顺序
+     * 我们也实现成这种方式
+     *
+     * class com.cn.aop.demo4.Before1 Before通知 order = 1
+     * class com.cn.aop.demo4.Before2 Before通知 order = 2
+     * class com.cn.aop.demo4.Around1 Around通知 order = 100000 start
+     * class com.cn.aop.demo4.Around2 Around通知 order = 100000 start
+     * class com.cn.aop.demo4.AServiceImpl.m1()
+     * class com.cn.aop.demo4.Around2 Around通知 order = 100000 end
+     * class com.cn.aop.demo4.Around1 Around通知 order = 100000 end
+     * class com.cn.aop.demo4.AfterReturning1 AfterReturning通知 order = 100000
+     * class com.cn.aop.demo4.AfterReturning2 AfterReturning通知 order = 100000
+     * class com.cn.aop.demo4.After2 After通知 order = 100000
+     * class com.cn.aop.demo4.After1 After通知 order = 100000
+     *
+     * ========================
+     *
+     * class com.cn.aop.demo4.Before1 Before通知 order = 1
+     * class com.cn.aop.demo4.Before2 Before通知 order = 2
+     * class com.cn.aop.demo4.Around1 Around通知 order = 100000 start
+     * class com.cn.aop.demo4.Around2 Around通知 order = 100000 start
+     * class com.cn.aop.demo4.AfterThrowing2 AfterThrowing通知 order = 100000
+     * class com.cn.aop.demo4.AfterThrowing1 AfterThrowing通知 order = 100000
+     * class com.cn.aop.demo4.After2 After通知 order = 100000
+     * class com.cn.aop.demo4.After1 After通知 order = 100000
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     * @return
+     */
     public Object proceed() {
         // 我们将 handlerinvocation的功能抽象到这里，并采用递归调用的方式直到目标方法和拦截器链全部执行完毕
+//        currentInterceptorIndex  list是按照顺序排好的
 
         return null;
     }

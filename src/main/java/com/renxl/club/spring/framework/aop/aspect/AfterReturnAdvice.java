@@ -9,9 +9,17 @@ import com.renxl.club.spring.framework.aop.interceptor.MethodInvocation;
  * @Version 1.0.0
  */
 public class AfterReturnAdvice extends AbstartAdvice implements Advice, MethodInterceptor {
-
+    /**
+     * 可以修改返回值
+     * 顺序早于after
+     * @param invocation
+     * @return
+     * @throws Throwable
+     */
     @Override
     public Object execute(MethodInvocation invocation) throws Throwable {
-        return null;
+        Object proceed = invocation.proceed();
+        proceed = invokeAdviceMethod(invocation, proceed, null);
+        return proceed;
     }
 }

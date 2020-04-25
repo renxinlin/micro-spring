@@ -11,6 +11,12 @@ import com.renxl.club.spring.framework.aop.interceptor.MethodInvocation;
 public class AfterThrowingAdvice extends AbstartAdvice implements Advice, MethodInterceptor {
     @Override
     public Object execute(MethodInvocation invocation) throws Throwable {
-        return null;
+
+        try {
+            return invocation.proceed();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return invokeAdviceMethod(invocation,null,e);
+        }
     }
 }
