@@ -17,5 +17,6 @@ public @interface Pointcut {
     // 这里我们只支持基于注解的切入点@annotation(com.renxl.Logger)
     // 以及基于指定包的切人点  "@package(com.renxl.club)"
     String value() default "";
+    String name() default "";
 
 }

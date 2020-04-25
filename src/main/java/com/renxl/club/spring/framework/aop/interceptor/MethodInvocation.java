@@ -46,7 +46,7 @@ public class MethodInvocation implements JoinPoint {
     private Map<String, Object> attributes;;
 
     // 记录当前拦截器链执行位置  这个东西注意下，spring源码中也有这样一个东西
-    private int currentInterceptorIndex = -1;
+    private int currentInterceptorIndex = 0;
 
 
 
@@ -128,10 +128,20 @@ public class MethodInvocation implements JoinPoint {
      *
      * @return
      */
-    public Object proceed() {
+    public Object proceed() throws Throwable {
         // 我们将 handlerinvocation的功能抽象到这里，并采用递归调用的方式直到目标方法和拦截器链全部执行完毕
-//        currentInterceptorIndex  list是按照顺序排好的
-
-        return null;
+        // currentInterceptorIndex  list是按照顺序排好的
+        if(this.interceptorsAndDynamicMethodMatchers != null &&  currentInterceptorIndex < interceptorsAndDynamicMethodMatchers.size()){
+            Object o = this.interceptorsAndDynamicMethodMatchers.get(currentInterceptorIndex);
+            currentInterceptorIndex++;
+            if(o instanceof MethodInterceptor){
+                MethodInterceptor methodInterceptor = (MethodInterceptor) o;
+                methodInterceptor.execute(this);
+            }else {
+                // 这里不大可能，只有出现不匹配的时候，通过currentInterceptorIndex++跳过这一个;
+                proceed();
+            }
+        }
+        return method.invoke(target,arguments);
     }
 }

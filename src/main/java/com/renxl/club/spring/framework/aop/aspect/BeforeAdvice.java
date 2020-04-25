@@ -3,12 +3,21 @@ package com.renxl.club.spring.framework.aop.aspect;
 import com.renxl.club.spring.framework.aop.interceptor.MethodInterceptor;
 import com.renxl.club.spring.framework.aop.interceptor.MethodInvocation;
 
+import java.lang.reflect.Method;
+
 /**
  * @Author renxl
  * @Date 2020-04-23 19:16
  * @Version 1.0.0
  */
 public class BeforeAdvice extends AbstartAdvice implements Advice, MethodInterceptor {
+    public BeforeAdvice() {
+    }
+
+    public BeforeAdvice(Method aspectMethod, Object aspectTarget) {
+        super(aspectMethod, aspectTarget);
+    }
+
     /**
      * 不可以修改返回值
      * @param invocation
