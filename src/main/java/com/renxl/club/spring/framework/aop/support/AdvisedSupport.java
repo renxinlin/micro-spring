@@ -162,6 +162,7 @@ public class AdvisedSupport {
                         methodInterceptor = new ArrayList<Object>();
                     }
                     methodInterceptor.add(advice);
+                    methodAndMethodInterceptors.put(method, methodInterceptor);
                 }
                 if (pointcut != null) {
                     String value = pointcut.value();
@@ -206,14 +207,6 @@ public class AdvisedSupport {
     }
 
 
-    public List<String> getPointCuts() {
-        return pointCuts;
-    }
-
-    public void setPointCuts(List<String> pointCuts) {
-        this.pointCuts = pointCuts;
-    }
-
     public Object getTarget() {
         return target;
     }
@@ -222,19 +215,9 @@ public class AdvisedSupport {
         this.target = target;
     }
 
-    public AopConfigHolder getConfigHolder() {
-        return configHolder;
-    }
 
     public void setConfigHolder(AopConfigHolder configHolder) {
         this.configHolder = configHolder;
     }
 
-    public Map<Method, List<Object>> getMethodAndMethodInterceptors() {
-        return methodAndMethodInterceptors;
-    }
-
-    public void setMethodAndMethodInterceptors(Map<Method, List<Object>> methodAndMethodInterceptors) {
-        this.methodAndMethodInterceptors = methodAndMethodInterceptors;
-    }
 }

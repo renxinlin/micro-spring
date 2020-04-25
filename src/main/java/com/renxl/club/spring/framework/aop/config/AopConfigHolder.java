@@ -12,16 +12,12 @@ import java.util.List;
  */
 public class AopConfigHolder {
     /**
-     * 切面元信息holder
+     * 切面元信息holder  有个缺点 AopConfig里面都是String 所以@aspect对应的类只能五种通知各一个
      */
     private List<AopConfig> aopConfigs = new ArrayList ();
 
     public List<AopConfig> getAopConfigs() {
         return aopConfigs;
-    }
-
-    public void setAopConfigs(List<AopConfig> aopConfigs) {
-        this.aopConfigs = aopConfigs;
     }
 
 

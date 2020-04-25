@@ -1,7 +1,10 @@
 package com.renxl.club.spring.framework.bean.support;
 
 
+import com.renxl.club.spring.framework.aop.annotation.Aspect;
+import com.renxl.club.spring.framework.aop.config.AopConfig;
 import com.renxl.club.spring.framework.bean.BeanDefinition;
+import com.renxl.club.spring.framework.context.DefaultApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,11 +21,12 @@ public class DefaultBeanDefinitionReader implements BeanDefinitionReader {
     private List<String> allScanClasses = new ArrayList<String>();
 
     private Properties config = new Properties();
+    private DefaultApplicationContext applicationContext;
 
     //固定配置文件中的key，相对于xml的规范
     private final String SCAN_PACKAGE = "scanPackages";
 
-    public DefaultBeanDefinitionReader(String location) {
+    public DefaultBeanDefinitionReader(String location,DefaultApplicationContext applicationContext) {
         //通过URL定位找到其所对应的文件，然后转换为文件流
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(location);
         try {
@@ -38,8 +42,11 @@ public class DefaultBeanDefinitionReader implements BeanDefinitionReader {
                 }
             }
         }
+
+        this.applicationContext = applicationContext;
         // 组件扫描
         scanner(config.getProperty(SCAN_PACKAGE));
+
 
     }
 
@@ -90,11 +97,27 @@ public class DefaultBeanDefinitionReader implements BeanDefinitionReader {
                     BeanDefinition beanDefinition =  buildBeanDefinition(clazz);
                     bds.add(beanDefinition);
                 }
+
+                // 找出所有的@aspect接口
+                if(clazz.isAnnotationPresent(Aspect.class)){
+                    AopConfig aopconfig = buildAopConfig(clazz);
+                    applicationContext.getAopConfigHolder().addAopConfig(aopconfig);
+                }
+
+
+
+
             }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         return bds;
+    }
+
+    private AopConfig buildAopConfig(Class<?> clazz) {
+        AopConfig aopconfig = new AopConfig();
+        aopconfig.setAspectClass(clazz.getName());
+        return aopconfig;
     }
 
     /**
@@ -114,17 +137,17 @@ public class DefaultBeanDefinitionReader implements BeanDefinitionReader {
 
         // todo
         /**
-        // 委托处理依赖
-        beanDefinition.setDependsOn();
+         // 委托处理依赖
+         beanDefinition.setDependsOn();
 
-        // 委托处理描述
-        beanDefinition.setDescription();
+         // 委托处理描述
+         beanDefinition.setDescription();
 
-        beanDefinition.setInitMethodName();
-        beanDefinition.setDestroyMethodName();
+         beanDefinition.setInitMethodName();
+         beanDefinition.setDestroyMethodName();
 
-        // 委托处理优先注入
-        beanDefinition.setPrimary();
+         // 委托处理优先注入
+         beanDefinition.setPrimary();
          */
         return beanDefinition;
 

@@ -1,8 +1,15 @@
 package com.renxl.club.spring.framework.context;
 
+import java.security.KeyStore.Builder;
+
 import com.renxl.club.spring.framework.annotation.Autowired;
 import com.renxl.club.spring.framework.annotation.Controller;
 import com.renxl.club.spring.framework.annotation.Service;
+import com.renxl.club.spring.framework.aop.aoproxy.AopProxy;
+import com.renxl.club.spring.framework.aop.aoproxy.CglibAopProxy;
+import com.renxl.club.spring.framework.aop.aoproxy.JdkAopProxy;
+import com.renxl.club.spring.framework.aop.config.AopConfigHolder;
+import com.renxl.club.spring.framework.aop.support.AdvisedSupport;
 import com.renxl.club.spring.framework.bean.BeanDefinition;
 import com.renxl.club.spring.framework.bean.BeanWrapper;
 import com.renxl.club.spring.framework.bean.support.DefaultBeanDefinitionReader;
@@ -26,6 +33,9 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
      */
     private String propertiesFile; //  applitaion-a.p,applitaion-a.p,
 
+
+    private AopConfigHolder aopConfigHolder = new AopConfigHolder();
+
     public DefaultApplicationContext(String propertiesFile) {
         this.propertiesFile = propertiesFile;
         try {
@@ -37,7 +47,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     @Override
     public void refresh() {
-        reader = new DefaultBeanDefinitionReader(propertiesFile);
+        reader = new DefaultBeanDefinitionReader(propertiesFile, this);
         /**
          * spring本身三步走
          * 定位 xml->resource
@@ -83,7 +93,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     @Override
     public Object getBean(String beanName) {
-        if(singletonCache.containsKey(beanName)){
+        if (singletonCache.containsKey(beanName)) {
             return singletonCache.get(beanName);
         }
         BeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
@@ -111,29 +121,31 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
         Class<?> clazz = beanWrapper.getWrappedClass();
         //判断只有加了注解的类，才执行依赖注入
-        if(!(clazz.isAnnotationPresent(Controller.class) || clazz.isAnnotationPresent(Service.class))){
+        if (!(clazz.isAnnotationPresent(Controller.class) || clazz.isAnnotationPresent(Service.class))) {
             return;
         }
 
         //获得所有的fields
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
-            if(!field.isAnnotationPresent(Autowired.class)){ continue;}
+            if (!field.isAnnotationPresent(Autowired.class)) {
+                continue;
+            }
 
             Autowired autowired = field.getAnnotation(Autowired.class);
 
-            String autowiredBeanName =  autowired.value().trim();
-            if("".equals(autowiredBeanName)){
+            String autowiredBeanName = autowired.value().trim();
+            if ("".equals(autowiredBeanName)) {
                 autowiredBeanName = field.getType().getSimpleName();
             }
             //强制访问
             field.setAccessible(true);
             try {
                 //为什么会为NULL，先留个坑
-                if(this.singletonCache.get(autowiredBeanName) == null){
+                if (this.singletonCache.get(autowiredBeanName) == null) {
                     continue;
                 }
-                field.set(instance,this.singletonCache.get(autowiredBeanName));
+                field.set(instance, this.singletonCache.get(autowiredBeanName));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -148,14 +160,32 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         try {
             Class<?> clazz = Class.forName(className);
             instance = clazz.newInstance();
-            // todo aop 和factorybean
+            // todo aop 和factorybean  都不可以少 factorybean+bdpp 是个非常重要的扩展点
+
+            AdvisedSupport advisedSupport = new AdvisedSupport();
+            advisedSupport.setConfigHolder(aopConfigHolder);
+            advisedSupport.setTargetClass(clazz); // 低层解析拦截器链 切人点
+            advisedSupport.setTarget(instance);
+            boolean isAop = advisedSupport.pointCutMatch(); // 是否匹配切入点表达式
+            if (isAop) {
+                // 先加入aop
+                Class<?>[] interfaces = clazz.getInterfaces();
+                AopProxy proxy = null;
+                if (interfaces == null || interfaces.length == 0) {
+                    proxy = new CglibAopProxy(advisedSupport);
+                } else {
+                    proxy = new JdkAopProxy(advisedSupport);
+                }
+                instance = proxy.getProxy();
+            }
+
             this.singletonCache.put(beanName, instance);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         // 实现aware
-        if(instance instanceof ApplicationContextAware){
+        if (instance instanceof ApplicationContextAware) {
             ((ApplicationContextAware) instance).setApplicationContext(this);
         }
         return instance;
@@ -168,6 +198,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     /**
      * 目前设计的方向是构建一个二级索引结构
      * 所有的索引都指向singleton缓冲池
+     *
      * @param beanClass
      * @return
      */
@@ -178,6 +209,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     }
 
 
-
-
+    public AopConfigHolder getAopConfigHolder() {
+        return aopConfigHolder;
+    }
 }
