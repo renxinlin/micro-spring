@@ -1,4 +1,5 @@
 package com.renxl.club.spring.framework.aop.support;
+import java.util.*;
 import	java.util.stream.Collectors;
 
 import com.renxl.club.spring.framework.aop.annotation.*;
@@ -9,9 +10,6 @@ import com.renxl.club.spring.framework.util.StringUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 封装了拦截器链   单例对象信息
@@ -53,10 +51,10 @@ public class AdvisedSupport {
     /**
      * method和method对应的拦截器链路
      */
-    private transient Map<Method, List<Object>> methodAndMethodInterceptors;
+    private transient Map<Method, List<Advice>> methodAndMethodInterceptors;
 
 
-    private transient Map<String, List<Object>> pointCutAndMethodInterceptors;
+    private transient Map<String, List<Advice>> pointCutAndMethodInterceptors;
     private transient Map<String, String> pointcutAndMethod;
     private transient Map<String, String> methodAndPointcut;
 
@@ -132,6 +130,7 @@ public class AdvisedSupport {
                 Object instance = aspectClass.newInstance();
                 aspectResolver(methods, instance);
                 weaver(targetMethod);
+                order();
 
 
             }
@@ -142,6 +141,42 @@ public class AdvisedSupport {
         }
 
 
+    }
+
+    private void order() {
+        Map<Method, List<Advice>> sortedMethodAndMethodInterceptors = new HashMap  ();
+
+        for(Map.Entry<Method, List<Advice>> methodListEntry:this.methodAndMethodInterceptors.entrySet()){
+            List<Advice> interceptors = methodListEntry.getValue();
+            Comparator<Advice> comparator = new Comparator<Advice>() {
+
+                @Override
+                public int compare(Advice o1, Advice o2) {
+                    return o1.getOrder() - o2.getOrder();
+                }
+            };
+            List<Advice> beforeAdvices = interceptors.stream().filter(interceptor -> interceptor instanceof BeforeAdvice).collect(Collectors.toList());
+            List<Advice> aroundAdvices = interceptors.stream().filter(interceptor -> interceptor instanceof AroundAdvice).collect(Collectors.toList());
+            List<Advice> afterReturnAdvices = interceptors.stream().filter(interceptor -> interceptor instanceof AfterReturnAdvice).collect(Collectors.toList());
+            List<Advice> afterThrowingAdvices = interceptors.stream().filter(interceptor -> interceptor instanceof AfterThrowingAdvice).collect(Collectors.toList());
+            List<Advice> afterAdvices = interceptors.stream().filter(interceptor -> interceptor instanceof AfterAdvice).collect(Collectors.toList());
+
+            beforeAdvices.sort(comparator);
+            aroundAdvices.sort(comparator);
+            afterReturnAdvices.sort(comparator);
+            afterThrowingAdvices.sort(comparator);
+            afterAdvices.sort(comparator);
+
+            List<Advice> sortAdvices = new LinkedList<> ();
+            sortAdvices.addAll(beforeAdvices);
+            sortAdvices.addAll(aroundAdvices);
+            sortAdvices.addAll(afterReturnAdvices);
+            sortAdvices.addAll(afterThrowingAdvices);
+            sortAdvices.addAll(afterAdvices);
+            methodAndMethodInterceptors.put(methodListEntry.getKey(),sortAdvices);
+
+        }
+        methodAndMethodInterceptors = sortedMethodAndMethodInterceptors;
     }
 
     /**
@@ -160,11 +195,11 @@ public class AdvisedSupport {
                 package_ = StringUtil.getSubString(package_, ANNOTATION_LEFT, ANNOTATION_RIGHT);
                 String targetPackage = targetMethod.getDeclaringClass().getPackage().getName();
                 if(targetPackage.equals(package_)){
-                    List<Object> methodInterceptors = methodAndMethodInterceptors.get(targetMethod);
+                    List<Advice> methodInterceptors = methodAndMethodInterceptors.get(targetMethod);
                     if(methodInterceptors == null){
-                        methodInterceptors = new ArrayList<Object> ();
+                        methodInterceptors = new ArrayList<Advice> ();
                     }
-                    List<Object> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get(package_));
+                    List<Advice> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get(package_));
                     methodInterceptors.addAll(interceptors);
                     methodAndMethodInterceptors.put(targetMethod,methodInterceptors);
 
@@ -181,11 +216,11 @@ public class AdvisedSupport {
                     // 判断是不是正常的
                     String annotationName = declaredAnnotation.getClass().getName();
                     if(annotationName.equals(annotation)){
-                        List<Object> methodInterceptors = methodAndMethodInterceptors.get(targetMethod);
+                        List<Advice> methodInterceptors = methodAndMethodInterceptors.get(targetMethod);
                         if(methodInterceptors == null){
-                            methodInterceptors = new ArrayList<Object> ();
+                            methodInterceptors = new ArrayList ();
                         }
-                        List<Object> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get(annotation));
+                        List<Advice> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get(annotation));
                         methodInterceptors.addAll(interceptors);
                         methodAndMethodInterceptors.put(targetMethod,methodInterceptors);
 
@@ -241,9 +276,9 @@ public class AdvisedSupport {
             }
 
             if (existAdviceMethod) {
-                List<Object> pointCutAndMethodInterceptor = pointCutAndMethodInterceptors.get(pointCutMethodName);
+                List<Advice> pointCutAndMethodInterceptor = pointCutAndMethodInterceptors.get(pointCutMethodName);
                 if (pointCutAndMethodInterceptor == null) {
-                    pointCutAndMethodInterceptor = new ArrayList<Object>();
+                    pointCutAndMethodInterceptor = new ArrayList<Advice>();
                 }
                 pointCutAndMethodInterceptor.add(advice);
                 pointCutAndMethodInterceptors.put(pointCutMethodName, pointCutAndMethodInterceptor);
@@ -266,8 +301,8 @@ public class AdvisedSupport {
      * @return
      * @throws NoSuchMethodException
      */
-    public List<Object> getAllAdvices(Method method, Class<?> targetClass) throws NoSuchMethodException {
-        List<Object> interceptors = methodAndMethodInterceptors.get(method);
+    public List<Advice> getAllAdvices(Method method, Class<?> targetClass) throws NoSuchMethodException {
+        List<Advice> interceptors = methodAndMethodInterceptors.get(method);
         if (interceptors == null) {
             Method m = targetClass.getMethod(method.getName(), method.getParameterTypes());
             interceptors = methodAndMethodInterceptors.get(m);

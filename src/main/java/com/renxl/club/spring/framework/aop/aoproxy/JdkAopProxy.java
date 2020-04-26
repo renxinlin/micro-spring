@@ -1,5 +1,6 @@
 package com.renxl.club.spring.framework.aop.aoproxy;
 
+import com.renxl.club.spring.framework.aop.aspect.Advice;
 import com.renxl.club.spring.framework.aop.interceptor.MethodInvocation;
 import com.renxl.club.spring.framework.aop.support.AdvisedSupport;
 
@@ -31,7 +32,7 @@ public class JdkAopProxy  implements InvocationHandler,AopProxy {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        List<Object> interceptors = this.advisedSupport.getAllAdvices(method,this.advisedSupport.getTargetClass());
+        List<Advice> interceptors = this.advisedSupport.getAllAdvices(method,this.advisedSupport.getTargetClass());
         MethodInvocation methodInvocation = new MethodInvocation(method, advisedSupport.getTarget(),args,interceptors,advisedSupport.getTargetClass(),new HashMap());
         return methodInvocation.proceed();
     }

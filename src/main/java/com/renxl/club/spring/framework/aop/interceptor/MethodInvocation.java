@@ -1,5 +1,6 @@
 package com.renxl.club.spring.framework.aop.interceptor;
 
+import com.renxl.club.spring.framework.aop.aspect.Advice;
 import com.renxl.club.spring.framework.aop.aspect.JoinPoint;
 
 import java.lang.reflect.Method;
@@ -19,7 +20,7 @@ public class MethodInvocation implements JoinPoint {
 
 
 
-    public MethodInvocation(Method method, Object target, Object[] arguments, List<Object> interceptorsAndDynamicMethodMatchers, Class<?> targetClass, Map<String, Object> attributes) {
+    public MethodInvocation(Method method, Object target, Object[] arguments, List<Advice> interceptorsAndDynamicMethodMatchers, Class<?> targetClass, Map<String, Object> attributes) {
         this.method = method;
         this.target = target;
         this.arguments = arguments;
@@ -35,7 +36,7 @@ public class MethodInvocation implements JoinPoint {
 
     private Object [] arguments;
 
-    private List<Object> interceptorsAndDynamicMethodMatchers;
+    private List<Advice> interceptorsAndDynamicMethodMatchers;
 
     private Class<?> targetClass;
 
@@ -115,7 +116,7 @@ public class MethodInvocation implements JoinPoint {
      * class com.cn.aop.demo4.After2 After通知 order = 100000
      * class com.cn.aop.demo4.After1 After通知 order = 100000
      *
-     *
+     *before-around-afterreturn-afterthrowing-after
      *
      *
      *
