@@ -4,6 +4,7 @@ import com.renxl.club.spring.framework.bean.BeanWrapper;
 import com.renxl.club.spring.framework.bean.support.BeanDefinitionReader;
 import com.renxl.club.spring.framework.bean.support.DefaultListableBeanFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,6 +32,8 @@ public abstract class AbstractApplicationContext extends
      * 封装的ioc单例缓冲
      */
     protected Map<String, BeanWrapper> singletonWrapperCache = new ConcurrentHashMap<String, BeanWrapper>();
+
+    protected Map<String, List<BeanName>> interfacesImpl = new ConcurrentHashMap();
 
     public BeanDefinitionReader getReader() {
         return reader;

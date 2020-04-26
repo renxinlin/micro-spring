@@ -1,7 +1,5 @@
 package com.renxl.club.spring.framework.context;
 
-import java.security.KeyStore.Builder;
-
 import com.renxl.club.spring.framework.annotation.Autowired;
 import com.renxl.club.spring.framework.annotation.Controller;
 import com.renxl.club.spring.framework.annotation.Service;
@@ -14,6 +12,7 @@ import com.renxl.club.spring.framework.bean.BeanDefinition;
 import com.renxl.club.spring.framework.bean.BeanWrapper;
 import com.renxl.club.spring.framework.bean.support.DefaultBeanDefinitionReader;
 import com.renxl.club.spring.framework.context.support.AbstractApplicationContext;
+import com.renxl.club.spring.framework.context.support.BeanName;
 import com.renxl.club.spring.framework.util.StringManager;
 
 import java.lang.reflect.Field;
@@ -71,6 +70,13 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
                 getBean(beanName);
             }
         }
+
+        for (Map.Entry<String, BeanDefinition> beanDefinitionEntry : beanDefinitionMap.entrySet()) {
+            String beanName = beanDefinitionEntry.getKey();
+            populateBean(beanName, singletonWrapperCache.get(beanName));
+
+        }
+
     }
 
     /**
@@ -108,12 +114,10 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
         singletonWrapperCache.put(beanName, beanWrapper);
 
-//        postProcessor.postProcessAfterInitialization(instance,beanName);
-        populateBean(beanName, new BeanDefinition(), beanWrapper);
         return this.singletonWrapperCache.get(beanName).getWrappedInstance();
     }
 
-    private void populateBean(String beanName, BeanDefinition beanDefinition, BeanWrapper beanWrapper) {
+    private void populateBean(String beanName, BeanWrapper beanWrapper) {
 
 
         Object instance = beanWrapper.getWrappedInstance();
@@ -133,15 +137,42 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
             }
 
             Autowired autowired = field.getAnnotation(Autowired.class);
+            boolean anInterface = field.getType()
+                    .isInterface();
+            String interfaceBeanName = "";
+            if(anInterface){
+                List<BeanName> beanNames = getInterfacesImpl().get(field.getType().getName());
+                if(beanNames == null || beanNames.size()==0){
+                    throw new RuntimeException("there no one bean as " + field.getType().getName());
+
+                }
+                if(beanNames.size() > 1){
+                    for(BeanName beanName_: beanNames){
+                        if(beanName_.isPrimary()){
+                            interfaceBeanName = beanName_.getName();
+                        }
+                    }
+                    if("".equals(interfaceBeanName)){
+                        throw new RuntimeException("there find more than one bean ");
+                    }
+                }else {
+                    interfaceBeanName = beanNames.get(0).getName();
+                }
+
+            }
 
             String autowiredBeanName = autowired.value().trim();
+            if(anInterface){
+                autowiredBeanName = interfaceBeanName;
+            }
             if ("".equals(autowiredBeanName)) {
                 autowiredBeanName = field.getType().getSimpleName();
             }
+
+
             //强制访问
             field.setAccessible(true);
             try {
-                //为什么会为NULL，先留个坑
                 if (this.singletonCache.get(autowiredBeanName) == null) {
                     continue;
                 }
@@ -163,6 +194,11 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
             // todo aop 和factorybean  都不可以少 factorybean+bdpp 是个非常重要的扩展点
 
             instance = aopProcessor(instance, clazz);
+            Class<?>[] interfaces = clazz.getInterfaces();
+            for(Class interface_:interfaces){
+                this.singletonCache.put(interface_.getName(), instance);
+
+            }
 
             this.singletonCache.put(beanName, instance);
         } catch (Exception e) {
@@ -216,5 +252,9 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     public AopConfigHolder getAopConfigHolder() {
         return aopConfigHolder;
+    }
+
+    public  Map<String, List<BeanName>> getInterfacesImpl(){
+        return interfacesImpl;
     }
 }

@@ -1,10 +1,12 @@
 package com.renxl.club.spring.framework.bean.support;
 
 
+import com.renxl.club.spring.framework.annotation.Primary;
 import com.renxl.club.spring.framework.aop.annotation.Aspect;
 import com.renxl.club.spring.framework.aop.config.AopConfig;
 import com.renxl.club.spring.framework.bean.BeanDefinition;
 import com.renxl.club.spring.framework.context.DefaultApplicationContext;
+import com.renxl.club.spring.framework.context.support.BeanName;
 
 import java.io.File;
 import java.io.IOException;
@@ -96,6 +98,21 @@ public class DefaultBeanDefinitionReader implements BeanDefinitionReader {
                 if (!clazz.isInterface()) {
                     BeanDefinition beanDefinition =  buildBeanDefinition(clazz);
                     bds.add(beanDefinition);
+
+                    Primary declaredAnnotation = clazz.getDeclaredAnnotation(Primary.class);
+                    boolean isprimary = declaredAnnotation!=null;
+
+                    Class<?>[] interfaces = clazz.getInterfaces();
+                    for(Class interface_ : interfaces){
+                        List<BeanName> beanNames = applicationContext.getInterfacesImpl().get(interface_.getName());
+                        if(beanNames == null){
+                            beanNames = new ArrayList<> ();
+                        }
+                        // todo 处理primary注解
+                        beanNames.add(new BeanName(clazz.getSimpleName(),isprimary));
+                        applicationContext.getInterfacesImpl().put(interface_.getName(), beanNames);
+                    }
+
                 }
 
                 // 找出所有的@aspect接口

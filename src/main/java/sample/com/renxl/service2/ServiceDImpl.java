@@ -16,6 +16,8 @@ public class ServiceDImpl implements ServiceD {
     private ServiceF servicef;
     @Override
     public String say() {
+        System.out.println("f");
+
         servicef.eat();
         return "dimpl";
     }

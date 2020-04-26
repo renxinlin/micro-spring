@@ -14,6 +14,7 @@ public class ServiceE {
 
     @Aop
     public String shuo(){
+        System.out.println("e");
         return "servicee";
     }
 }

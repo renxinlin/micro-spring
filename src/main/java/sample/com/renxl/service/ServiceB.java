@@ -13,6 +13,7 @@ public class ServiceB {
 
 
     public String shuo(){
+        System.out.println("b");
         return "shuo";
     }
 }

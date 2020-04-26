@@ -10,6 +10,6 @@ import com.renxl.club.spring.framework.annotation.Service;
 @Service
 public class ServiceC {
     public void eat() {
-        System.out.println("im eating... ");
+        System.out.println("c im eating... ");
     }
 }
