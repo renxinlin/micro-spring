@@ -14,8 +14,8 @@ public class AfterThrowingAdvice extends AbstartAdvice implements Advice, Method
     public AfterThrowingAdvice() {
     }
 
-    public AfterThrowingAdvice(Method aspectMethod, Object aspectTarget) {
-        super(aspectMethod, aspectTarget);
+    public AfterThrowingAdvice(Method aspectMethod, Object aspectTarget,int order) {
+        super(aspectMethod, aspectTarget,order);
     }
 
     @Override

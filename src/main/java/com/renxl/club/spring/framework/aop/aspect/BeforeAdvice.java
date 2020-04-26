@@ -14,8 +14,8 @@ public class BeforeAdvice extends AbstartAdvice implements Advice, MethodInterce
     public BeforeAdvice() {
     }
 
-    public BeforeAdvice(Method aspectMethod, Object aspectTarget) {
-        super(aspectMethod, aspectTarget);
+    public BeforeAdvice(Method aspectMethod, Object aspectTarget,int order) {
+        super(aspectMethod, aspectTarget,order);
     }
 
     /**

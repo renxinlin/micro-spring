@@ -14,8 +14,8 @@ public class AroundAdvice extends AbstartAdvice implements Advice, MethodInterce
     public AroundAdvice() {
     }
 
-    public AroundAdvice(Method aspectMethod, Object aspectTarget) {
-        super(aspectMethod, aspectTarget);
+    public AroundAdvice(Method aspectMethod, Object aspectTarget,int order) {
+        super(aspectMethod, aspectTarget,order);
     }
 
     /**

@@ -9,6 +9,10 @@ package com.renxl.club.spring.framework.aop.aspect;
  */
 public interface Advice {
 
-
+    /**
+     * 同种通知的优先级
+      * @return
+     */
+     int getOrder();
 
 }

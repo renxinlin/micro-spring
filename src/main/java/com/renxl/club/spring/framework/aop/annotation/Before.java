@@ -15,5 +15,6 @@ import java.lang.annotation.Target;
 public @interface Before {
     // pointcut所在的方法，目前就支持这一种
     String value();
+    int priority() default 0;
 
 }

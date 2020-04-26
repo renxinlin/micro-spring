@@ -11,12 +11,11 @@ import java.lang.reflect.Method;
  * @Version 1.0.0
  */
 public class AfterAdvice extends AbstartAdvice implements Advice, MethodInterceptor {
-
     public AfterAdvice() {
     }
 
-    public AfterAdvice(Method aspectMethod, Object aspectTarget) {
-        super(aspectMethod, aspectTarget);
+    public AfterAdvice(Method aspectMethod, Object aspectTarget,int order) {
+        super(aspectMethod, aspectTarget ,order);
     }
 
     /**
@@ -31,4 +30,5 @@ public class AfterAdvice extends AbstartAdvice implements Advice, MethodIntercep
         invokeAdviceMethod(invocation,null,null);
         return proceed;
     }
+
 }

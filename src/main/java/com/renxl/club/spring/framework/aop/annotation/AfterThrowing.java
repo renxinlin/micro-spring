@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface AfterThrowing {
     String value() default "";
+    int priority() default 0;
 
 
 

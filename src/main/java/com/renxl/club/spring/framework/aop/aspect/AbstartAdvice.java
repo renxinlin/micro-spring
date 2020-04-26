@@ -9,6 +9,8 @@ import java.lang.reflect.Method;
  * @Version 1.0.0
  */
 public class AbstartAdvice implements Advice {
+    private int order = 0;
+
     /**
      * 通知的方法
      */
@@ -24,9 +26,10 @@ public class AbstartAdvice implements Advice {
     public AbstartAdvice() {
     }
 
-    public AbstartAdvice(Method aspectMethod, Object aspectTarget) {
+    public AbstartAdvice(Method aspectMethod, Object aspectTarget,int order) {
         this.aspectMethod = aspectMethod;
         this.aspectTarget = aspectTarget;
+        this.order = order;
     }
 
     /**
@@ -58,5 +61,14 @@ public class AbstartAdvice implements Advice {
         return aspectMethod.invoke(aspectTarget,args);
 
 
+    }
+
+    @Override
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 }

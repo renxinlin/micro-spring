@@ -14,6 +14,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface After {
     String value();
-
-    String argNames() default "";
+    int priority() default 0;
 }

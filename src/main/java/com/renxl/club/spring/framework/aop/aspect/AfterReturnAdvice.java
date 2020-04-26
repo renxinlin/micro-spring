@@ -14,8 +14,8 @@ public class AfterReturnAdvice extends AbstartAdvice implements Advice, MethodIn
     public AfterReturnAdvice() {
     }
 
-    public AfterReturnAdvice(Method aspectMethod, Object aspectTarget) {
-        super(aspectMethod, aspectTarget);
+    public AfterReturnAdvice(Method aspectMethod, Object aspectTarget,int order) {
+        super(aspectMethod, aspectTarget,order);
     }
 
     /**

@@ -14,10 +14,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface AfterReturning {
     String value() default "";
+    int priority() default 0;
 
-    String pointcut() default "";
-
-    String returning() default "";
-
-    String argNames() default "";
 }

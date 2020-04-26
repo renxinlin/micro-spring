@@ -178,6 +178,7 @@ public class AdvisedSupport {
                 annotation = StringUtil.getSubString(annotation, ANNOTATION_LEFT, ANNOTATION_RIGHT);
                 Annotation[] declaredAnnotations = targetMethod.getDeclaredAnnotations();
                 for(Annotation declaredAnnotation:declaredAnnotations){
+                    // 判断是不是正常的
                     String annotationName = declaredAnnotation.getClass().getName();
                     if(annotationName.equals(annotation)){
                         List<Object> methodInterceptors = methodAndMethodInterceptors.get(targetMethod);
@@ -212,29 +213,30 @@ public class AdvisedSupport {
             Advice advice = null;
             if (after != null) {
                 existAdviceMethod = true;
-                advice = new AfterAdvice(method, instance);
+                advice = new AfterAdvice(method, instance,after.priority());
+
                 pointCutMethodName = after.value();
 
             }
             if (afterReturn != null) {
                 existAdviceMethod = true;
-                advice = new AfterReturnAdvice(method, instance);
+                advice = new AfterReturnAdvice(method, instance,afterReturn.priority());
                 pointCutMethodName = afterReturn.value();
 
             }
             if (afterThrowing != null) {
                 existAdviceMethod = true;
-                advice = new AfterThrowingAdvice(method, instance);
+                advice = new AfterThrowingAdvice(method, instance,afterThrowing.priority());
                 pointCutMethodName = afterThrowing.value();
             }
             if (around != null) {
                 existAdviceMethod = true;
-                advice = new AroundAdvice(method, instance);
+                advice = new AroundAdvice(method, instance,around.priority());
                 pointCutMethodName = around.value();
             }
             if (before != null) {
                 existAdviceMethod = true;
-                advice = new BeforeAdvice(method, instance);
+                advice = new BeforeAdvice(method, instance,before.priority());
                 pointCutMethodName = before.value();
             }
 

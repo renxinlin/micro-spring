@@ -14,4 +14,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface Aspect {
     String value() default "";
+    int priority() default 0;
+
 }
