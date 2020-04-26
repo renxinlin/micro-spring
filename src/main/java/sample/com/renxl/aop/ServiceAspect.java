@@ -1,5 +1,7 @@
 package sample.com.renxl.aop;
 
+import com.renxl.club.spring.framework.annotation.Service;
+import com.renxl.club.spring.framework.aop.annotation.Aspect;
 import com.renxl.club.spring.framework.aop.annotation.Before;
 import com.renxl.club.spring.framework.aop.annotation.Pointcut;
 import com.renxl.club.spring.framework.aop.aspect.JoinPoint;
@@ -10,6 +12,9 @@ import com.renxl.club.spring.framework.aop.interceptor.MethodInvocation;
  * @Date 2020-04-25 18:25
  * @Version 1.0.0
  */
+
+@Service
+@Aspect
 public class ServiceAspect {
 
     @Before("pointcut")

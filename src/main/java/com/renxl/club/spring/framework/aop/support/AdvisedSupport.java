@@ -1,4 +1,6 @@
 package com.renxl.club.spring.framework.aop.support;
+import	java.util.concurrent.ConcurrentHashMap;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import	java.util.stream.Collectors;
 
@@ -36,7 +38,7 @@ public class AdvisedSupport {
      * 切入点规则集合 ：目前实现包切人   注解切人
      * 不支持切人点表达式 //todo 研究下切人点的正则
      */
-    private List<String> pointCuts;
+    private List<String> pointCuts = new ArrayList<String> ();
 
 
     /**
@@ -51,17 +53,14 @@ public class AdvisedSupport {
     /**
      * method和method对应的拦截器链路
      */
-    private transient Map<Method, List<Advice>> methodAndMethodInterceptors;
-
-
-    private transient Map<String, List<Advice>> pointCutAndMethodInterceptors;
-    private transient Map<String, String> pointcutAndMethod;
-    private transient Map<String, String> methodAndPointcut;
+    private transient Map<Method, List<Advice>> methodAndMethodInterceptors = new ConcurrentHashMap<> ();
+    private transient Map<String, List<Advice>> pointCutAndMethodInterceptors= new ConcurrentHashMap<> ();
+    private transient Map<String, String> pointcutAndMethod= new ConcurrentHashMap<> ();
 
     public boolean pointCutMatch() throws ClassNotFoundException {
 
 
-        if (pointCuts == null) {
+        if (pointCuts == null || pointCuts.size() ==0) {
             return false;
         }
         List<String> annotations = new ArrayList<String>();
@@ -124,15 +123,15 @@ public class AdvisedSupport {
              */
 
             // 织入
-            Method[] targetMethods = targetClass.getMethods();
+            Method[] targetMethods = targetClass.getDeclaredMethods();
             Method[] methods = aspectClass.getMethods();
             for (Method targetMethod : targetMethods) {
-                Object instance = aspectClass.newInstance();
-                aspectResolver(methods, instance);
-                weaver(targetMethod);
-                order();
-
-
+               if( Modifier.toString(targetMethod.getModifiers()).contains("public")){
+                   Object instance = aspectClass.newInstance();
+                   aspectResolver(methods, instance);
+                   weaver(targetMethod);
+                   order();
+               }
             }
             // 切人点有两种,一种是包名，一种是自定义注解
             // 通知
@@ -199,7 +198,8 @@ public class AdvisedSupport {
                     if(methodInterceptors == null){
                         methodInterceptors = new ArrayList<Advice> ();
                     }
-                    List<Advice> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get(package_));
+                    String method = pointcutAndMethod.get(package_);
+                    List<Advice> interceptors = pointCutAndMethodInterceptors.get(method);
                     methodInterceptors.addAll(interceptors);
                     methodAndMethodInterceptors.put(targetMethod,methodInterceptors);
 
@@ -238,7 +238,7 @@ public class AdvisedSupport {
     private void aspectResolver(Method[] methods, Object instance) {
         for (Method method : methods) {
             String pointCutMethodName = "";
-            After after = (After) method.getAnnotation(After.class);
+            After after =  method.getAnnotation(After.class);
             AfterReturning afterReturn = method.getAnnotation(AfterReturning.class);
             AfterThrowing afterThrowing = method.getAnnotation(AfterThrowing.class);
             Around around = method.getAnnotation(Around.class);
@@ -286,8 +286,7 @@ public class AdvisedSupport {
             if (pointcut != null) {
                 String value = pointcut.value();
                 pointCuts.add(value);
-                pointcutAndMethod.put(value,method.getName());
-                methodAndPointcut.put(method.getName(),value);
+                pointcutAndMethod.put(value,method.getDeclaringClass().getName()+method.getName());
             }
         }
     }

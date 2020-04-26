@@ -23,7 +23,14 @@ BeanDefinition
 
 
 
-
+aop介绍：
+aop功能基本同springaop
+底层 支持cglib和jdk两种方式
+切入点表达式与spring不同
+目前支持@annotation(com.renxl.Annotation)
+@package(com.renxl)
+第一种表示方法上还注解的进行aop
+第二种表示指定包全部aop
 
 
 

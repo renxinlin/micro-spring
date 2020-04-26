@@ -1,7 +1,9 @@
 package com.renxl.club.spring.framework.bean.support;
 
 
+import com.renxl.club.spring.framework.annotation.Controller;
 import com.renxl.club.spring.framework.annotation.Primary;
+import com.renxl.club.spring.framework.annotation.Service;
 import com.renxl.club.spring.framework.aop.annotation.Aspect;
 import com.renxl.club.spring.framework.aop.config.AopConfig;
 import com.renxl.club.spring.framework.bean.BeanDefinition;
@@ -96,6 +98,9 @@ public class DefaultBeanDefinitionReader implements BeanDefinitionReader {
             for (String scanClass : allScanClasses) {
                 Class<?> clazz = Class.forName(scanClass);
                 if (!clazz.isInterface()) {
+                    if(!(clazz.getDeclaredAnnotation(Service.class)!= null || clazz.getDeclaredAnnotation(Controller.class)!= null)){
+                        continue;
+                    }
                     BeanDefinition beanDefinition =  buildBeanDefinition(clazz);
                     bds.add(beanDefinition);
 
@@ -112,14 +117,15 @@ public class DefaultBeanDefinitionReader implements BeanDefinitionReader {
                         beanNames.add(new BeanName(clazz.getSimpleName(),isprimary));
                         applicationContext.getInterfacesImpl().put(interface_.getName(), beanNames);
                     }
+                    // 找出所有的@aspect接口
+                    if(clazz.isAnnotationPresent(Aspect.class)){
+                        AopConfig aopconfig = buildAopConfig(clazz);
+                        applicationContext.getAopConfigHolder().addAopConfig(aopconfig);
+                    }
 
                 }
 
-                // 找出所有的@aspect接口
-                if(clazz.isAnnotationPresent(Aspect.class)){
-                    AopConfig aopconfig = buildAopConfig(clazz);
-                    applicationContext.getAopConfigHolder().addAopConfig(aopconfig);
-                }
+
 
 
 

@@ -103,12 +103,11 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
             return singletonCache.get(beanName);
         }
         BeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
-        Object instance = null;
         // todo 可以提供spring.factory这样的功能
 //        BeanPostProcessor postProcessor =
 //        postProcessor.postProcessBeforeInitialization(instance,beanName);
 
-        instance = instantiateBean(beanName, beanDefinition);
+        Object instance = instantiateBean(beanName, beanDefinition);
 
         BeanWrapper beanWrapper = new BeanWrapper(instance);
 
@@ -194,11 +193,6 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
             // todo aop 和factorybean  都不可以少 factorybean+bdpp 是个非常重要的扩展点
 
             instance = aopProcessor(instance, clazz);
-            Class<?>[] interfaces = clazz.getInterfaces();
-            for(Class interface_:interfaces){
-                this.singletonCache.put(interface_.getName(), instance);
-
-            }
 
             this.singletonCache.put(beanName, instance);
         } catch (Exception e) {
