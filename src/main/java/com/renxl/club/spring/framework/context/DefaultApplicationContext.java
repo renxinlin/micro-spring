@@ -162,22 +162,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
             instance = clazz.newInstance();
             // todo aop 和factorybean  都不可以少 factorybean+bdpp 是个非常重要的扩展点
 
-            AdvisedSupport advisedSupport = new AdvisedSupport();
-            advisedSupport.setConfigHolder(aopConfigHolder);
-            advisedSupport.setTargetClass(clazz); // 低层解析拦截器链 切人点
-            advisedSupport.setTarget(instance);
-            boolean isAop = advisedSupport.pointCutMatch(); // 是否匹配切入点表达式
-            if (isAop) {
-                // 先加入aop
-                Class<?>[] interfaces = clazz.getInterfaces();
-                AopProxy proxy = null;
-                if (interfaces == null || interfaces.length == 0) {
-                    proxy = new CglibAopProxy(advisedSupport);
-                } else {
-                    proxy = new JdkAopProxy(advisedSupport);
-                }
-                instance = proxy.getProxy();
-            }
+            instance = aopProcessor(instance, clazz);
 
             this.singletonCache.put(beanName, instance);
         } catch (Exception e) {
@@ -190,6 +175,26 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         }
         return instance;
 
+    }
+
+    private Object aopProcessor(Object instance, Class<?> clazz) throws Exception {
+        AdvisedSupport advisedSupport = new AdvisedSupport();
+        advisedSupport.setConfigHolder(aopConfigHolder);
+        advisedSupport.setTargetClass(clazz); // 低层解析拦截器链 切人点
+        advisedSupport.setTarget(instance);
+        boolean isAop = advisedSupport.pointCutMatch(); // 是否匹配切入点表达式
+        if (isAop) {
+            // 先加入aop
+            Class<?>[] interfaces = clazz.getInterfaces();
+            AopProxy proxy = null;
+            if (interfaces == null || interfaces.length == 0) {
+                proxy = new CglibAopProxy(advisedSupport);
+            } else {
+                proxy = new JdkAopProxy(advisedSupport);
+            }
+            instance = proxy.getProxy();
+        }
+        return instance;
     }
 
 

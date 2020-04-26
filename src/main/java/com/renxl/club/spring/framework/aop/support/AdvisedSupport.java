@@ -1,4 +1,5 @@
 package com.renxl.club.spring.framework.aop.support;
+import	java.util.stream.Collectors;
 
 import com.renxl.club.spring.framework.aop.annotation.*;
 import com.renxl.club.spring.framework.aop.aspect.*;
@@ -13,12 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- *
- *
  * 封装了拦截器链   单例对象信息
  * 相关aop切面信息
  * 为aopproxy提供封装对象，支持代理类创建
+ *
  * @Author renxl
  * @Date 2020-04-22 20:01
  * @Version 1.0.0
@@ -56,6 +55,11 @@ public class AdvisedSupport {
      */
     private transient Map<Method, List<Object>> methodAndMethodInterceptors;
 
+
+    private transient Map<String, List<Object>> pointCutAndMethodInterceptors;
+    private transient Map<String, String> pointcutAndMethod;
+    private transient Map<String, String> methodAndPointcut;
+
     public boolean pointCutMatch() throws ClassNotFoundException {
 
 
@@ -88,7 +92,7 @@ public class AdvisedSupport {
             for (Annotation annotationsOnMethod : annotationsOnMethods) {
                 String annotationName = annotationsOnMethod.annotationType().getDeclaringClass().getName();
                 for (String annotationStr : annotations) {
-                    if(annotationName.equals(annotationStr)){
+                    if (annotationName.equals(annotationStr)) {
                         return true;
                     }
                 }
@@ -100,7 +104,7 @@ public class AdvisedSupport {
     /**
      * 解析拦截器链
      */
-    private void parse() throws Exception{
+    private void parse() throws Exception {
         /**
          * 每一个aopconfig代表一个含@aspect注解的切面
          * */
@@ -120,90 +124,164 @@ public class AdvisedSupport {
              *
              * 获取所有的方法
              */
+
+            // 织入
+            Method[] targetMethods = targetClass.getMethods();
             Method[] methods = aspectClass.getMethods();
-            // 切人点有两种,一种是包名，一种是自定义注解
-            // 通知
-            Object instance = aspectClass.newInstance();
-            for (Method method : methods) {
-                After after = (After) method.getAnnotation(After.class);
-                AfterReturning afterReturn = method.getAnnotation(AfterReturning.class);
-                AfterThrowing afterThrowing = method.getAnnotation(AfterThrowing.class);
-                Around around = method.getAnnotation(Around.class);
-                Before before = method.getAnnotation(Before.class);
-                Pointcut pointcut = method.getAnnotation(Pointcut.class);
-                boolean existAdviceMethod = false;
-                Advice advice = null;
-                if (after != null) {
-                    existAdviceMethod = true;
-                    advice = new AfterAdvice(method, instance);
-
-                }
-                if (afterReturn != null) {
-                    existAdviceMethod = true;
-                    advice = new AfterReturnAdvice(method, instance);
-
-                }
-                if (afterThrowing != null) {
-                    existAdviceMethod = true;
-                    advice = new AfterThrowingAdvice(method, instance);
-                }
-                if (around != null) {
-                    existAdviceMethod = true;
-                    advice = new AroundAdvice(method, instance);
-                }
-                if (before != null) {
-                    existAdviceMethod = true;
-                    advice = new BeforeAdvice(method, instance);
-                }
-
-                if (existAdviceMethod) {
-                    List<Object> methodInterceptor = methodAndMethodInterceptors.get(method);
-                    if (methodInterceptor == null) {
-                        methodInterceptor = new ArrayList<Object>();
-                    }
-                    methodInterceptor.add(advice);
-                    methodAndMethodInterceptors.put(method, methodInterceptor);
-                }
-                if (pointcut != null) {
-                    String value = pointcut.value();
-                    pointCuts.add(value);
-                }
+            for (Method targetMethod : targetMethods) {
+                Object instance = aspectClass.newInstance();
+                aspectResolver(methods, instance);
+                weaver(targetMethod);
 
 
             }
+            // 切人点有两种,一种是包名，一种是自定义注解
+            // 通知
+
 
         }
 
 
     }
 
+    /**
+     * 织入
+     * @param targetMethod
+     */
+    private void weaver(Method targetMethod) {
+        // 切人点有两种
+        // @package(com.renxl)
+        List<String> packages = pointCuts.stream().filter(pointcut -> pointcut.startsWith(PRACKGE_EXPRE)).collect(Collectors.toList());
+
+        // @annotation(com.renxl.Aop)
+        List<String> annotations = pointCuts.stream().filter(pointcut -> pointcut.startsWith(ANNOTATION_EXPRE)).collect(Collectors.toList());
+        if(packages!=null && packages.size()>0){
+            for(String package_:packages){
+                package_ = StringUtil.getSubString(package_, ANNOTATION_LEFT, ANNOTATION_RIGHT);
+                String targetPackage = targetMethod.getDeclaringClass().getPackage().getName();
+                if(targetPackage.equals(package_)){
+                    List<Object> methodInterceptors = methodAndMethodInterceptors.get(targetMethod);
+                    if(methodInterceptors == null){
+                        methodInterceptors = new ArrayList<Object> ();
+                    }
+                    List<Object> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get(package_));
+                    methodInterceptors.addAll(interceptors);
+                    methodAndMethodInterceptors.put(targetMethod,methodInterceptors);
+
+                }
+            }
+        }
+
+
+        if(annotations!=null && annotations.size()>0){
+            for(String annotation:annotations){
+                annotation = StringUtil.getSubString(annotation, ANNOTATION_LEFT, ANNOTATION_RIGHT);
+                Annotation[] declaredAnnotations = targetMethod.getDeclaredAnnotations();
+                for(Annotation declaredAnnotation:declaredAnnotations){
+                    String annotationName = declaredAnnotation.getClass().getName();
+                    if(annotationName.equals(annotation)){
+                        List<Object> methodInterceptors = methodAndMethodInterceptors.get(targetMethod);
+                        if(methodInterceptors == null){
+                            methodInterceptors = new ArrayList<Object> ();
+                        }
+                        List<Object> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get(annotation));
+                        methodInterceptors.addAll(interceptors);
+                        methodAndMethodInterceptors.put(targetMethod,methodInterceptors);
+
+                    }
+
+                }
+
+            }
+        }
+
+
+
+    }
+
+    private void aspectResolver(Method[] methods, Object instance) {
+        for (Method method : methods) {
+            String pointCutMethodName = "";
+            After after = (After) method.getAnnotation(After.class);
+            AfterReturning afterReturn = method.getAnnotation(AfterReturning.class);
+            AfterThrowing afterThrowing = method.getAnnotation(AfterThrowing.class);
+            Around around = method.getAnnotation(Around.class);
+            Before before = method.getAnnotation(Before.class);
+            Pointcut pointcut = method.getAnnotation(Pointcut.class);
+            boolean existAdviceMethod = false;
+            Advice advice = null;
+            if (after != null) {
+                existAdviceMethod = true;
+                advice = new AfterAdvice(method, instance);
+                pointCutMethodName = after.value();
+
+            }
+            if (afterReturn != null) {
+                existAdviceMethod = true;
+                advice = new AfterReturnAdvice(method, instance);
+                pointCutMethodName = afterReturn.value();
+
+            }
+            if (afterThrowing != null) {
+                existAdviceMethod = true;
+                advice = new AfterThrowingAdvice(method, instance);
+                pointCutMethodName = afterThrowing.value();
+            }
+            if (around != null) {
+                existAdviceMethod = true;
+                advice = new AroundAdvice(method, instance);
+                pointCutMethodName = around.value();
+            }
+            if (before != null) {
+                existAdviceMethod = true;
+                advice = new BeforeAdvice(method, instance);
+                pointCutMethodName = before.value();
+            }
+
+            if (existAdviceMethod) {
+                List<Object> pointCutAndMethodInterceptor = pointCutAndMethodInterceptors.get(pointCutMethodName);
+                if (pointCutAndMethodInterceptor == null) {
+                    pointCutAndMethodInterceptor = new ArrayList<Object>();
+                }
+                pointCutAndMethodInterceptor.add(advice);
+                pointCutAndMethodInterceptors.put(pointCutMethodName, pointCutAndMethodInterceptor);
+            }
+            if (pointcut != null) {
+                String value = pointcut.value();
+                pointCuts.add(value);
+                pointcutAndMethod.put(value,method.getName());
+                methodAndPointcut.put(method.getName(),value);
+            }
+        }
+    }
 
 
     /**
      * todo  重新处理
-     * @param method
+     *
+     * @param method      被代理类方法 不是切面的方法
      * @param targetClass
      * @return
      * @throws NoSuchMethodException
      */
     public List<Object> getAllAdvices(Method method, Class<?> targetClass) throws NoSuchMethodException {
         List<Object> interceptors = methodAndMethodInterceptors.get(method);
-        if(interceptors == null){
-            Method m = targetClass.getMethod(method.getName(),method.getParameterTypes());
+        if (interceptors == null) {
+            Method m = targetClass.getMethod(method.getName(), method.getParameterTypes());
             interceptors = methodAndMethodInterceptors.get(m);
-            this.methodAndMethodInterceptors.put(m,interceptors);
+            this.methodAndMethodInterceptors.put(m, interceptors);
         }
         return interceptors;
     }
-
 
 
     public Class getTargetClass() {
         return targetClass;
     }
 
-    public void setTargetClass(Class targetClass) {
+    public void setTargetClass(Class targetClass) throws Exception {
         this.targetClass = targetClass;
+        parse();
     }
 
 

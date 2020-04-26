@@ -1,6 +1,7 @@
 package sample.com.renxl.service2;
 
 import com.renxl.club.spring.framework.annotation.Service;
+import sample.com.renxl.aop.Aop;
 
 /**
  * @Author renxl
@@ -11,7 +12,7 @@ import com.renxl.club.spring.framework.annotation.Service;
 public class ServiceE {
 
 
-
+    @Aop
     public String shuo(){
         return "servicee";
     }
