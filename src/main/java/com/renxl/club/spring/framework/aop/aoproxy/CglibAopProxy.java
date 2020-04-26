@@ -1,15 +1,15 @@
 package com.renxl.club.spring.framework.aop.aoproxy;
-import	java.util.HashMap;
 
 import com.renxl.club.spring.framework.aop.aspect.Advice;
 import com.renxl.club.spring.framework.aop.interceptor.MethodInvocation;
 import com.renxl.club.spring.framework.aop.support.AdvisedSupport;
-import net.sf.cglib.core.DebuggingClassWriter;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -26,8 +26,7 @@ public class CglibAopProxy implements MethodInterceptor,AopProxy {
 
     @Override
     public Object getProxy() {
-        return null;
-    }
+        return getProxy(advisedSupport.getClass().getClassLoader());    }
 
     @Override
     public Object getProxy(ClassLoader classLoader) {
@@ -57,4 +56,37 @@ public class CglibAopProxy implements MethodInterceptor,AopProxy {
         MethodInvocation methodInvocation = new MethodInvocation(method, advisedSupport.getTarget(),args,interceptors,advisedSupport.getTargetClass(),new HashMap());
         return methodInvocation.proceed();
     }
+
+
+
+
+
+    /**
+     * 从代理获取原始
+     * @param proxy
+     * @return
+     * @throws Exception
+     */
+    public static Object getTarget(Object proxy)   {
+        try {
+            Field h = proxy.getClass().getDeclaredField("CGLIB$CALLBACK_0");
+            h.setAccessible(true);
+            Object cglibAopProxy = h.get(proxy);
+            Field advisedSupport = cglibAopProxy.getClass().getDeclaredField("advisedSupport");
+            advisedSupport.setAccessible(true);
+            AdvisedSupport advisedSupportObject = (AdvisedSupport) advisedSupport.get(cglibAopProxy);
+            return  advisedSupportObject.getTarget();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("");
+        }
+
+    }
+
+
+
+
+
+
+
 }

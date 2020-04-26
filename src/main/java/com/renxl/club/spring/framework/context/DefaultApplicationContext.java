@@ -16,6 +16,7 @@ import com.renxl.club.spring.framework.context.support.BeanName;
 import com.renxl.club.spring.framework.util.StringManager;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -107,9 +108,8 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 //        BeanPostProcessor postProcessor =
 //        postProcessor.postProcessBeforeInitialization(instance,beanName);
 
-        Object instance = instantiateBean(beanName, beanDefinition);
+        BeanWrapper beanWrapper  = instantiateBean(beanName, beanDefinition);
 
-        BeanWrapper beanWrapper = new BeanWrapper(instance);
 
         singletonWrapperCache.put(beanName, beanWrapper);
 
@@ -120,14 +120,18 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
 
         Object instance = beanWrapper.getWrappedInstance();
+        Class clazz = instance.getClass();
 
-
-        Class<?> clazz = beanWrapper.getWrappedClass();
         //判断只有加了注解的类，才执行依赖注入
-        if (!(clazz.isAnnotationPresent(Controller.class) || clazz.isAnnotationPresent(Service.class))) {
-            return;
+        if(beanWrapper.isCglibProxy()){
+            instance = CglibAopProxy.getTarget(instance);
+            clazz = instance.getClass();
         }
+        if(beanWrapper.isJdkProxy()){
+            instance = JdkAopProxy.getTarget(instance);
+            clazz = instance.getClass();
 
+        }
         //获得所有的fields
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
@@ -184,16 +188,24 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     }
 
-    private Object instantiateBean(String beanName, BeanDefinition beanDefinition) {
+    private BeanWrapper instantiateBean(String beanName, BeanDefinition beanDefinition) {
         String className = beanDefinition.getBeanClass().getName();
+        BeanWrapper bean = null;
         Object instance = null;
         try {
             Class<?> clazz = Class.forName(className);
             instance = clazz.newInstance();
             // todo aop 和factorybean  都不可以少 factorybean+bdpp 是个非常重要的扩展点
 
-            instance = aopProcessor(instance, clazz);
+            HashMap map = aopProcessor(instance, clazz);
+            int proxtType = (int) map.get("proxyType");
+            instance =  map.get("proxy");
 
+            if(proxtType!=0){
+                bean = new BeanWrapper(instance, true,proxtType);
+            }else {
+                bean = new BeanWrapper(instance, false,proxtType);
+            }
             this.singletonCache.put(beanName, instance);
         } catch (Exception e) {
             e.printStackTrace();
@@ -203,28 +215,44 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         if (instance instanceof ApplicationContextAware) {
             ((ApplicationContextAware) instance).setApplicationContext(this);
         }
-        return instance;
+        return bean;
 
     }
 
-    private Object aopProcessor(Object instance, Class<?> clazz) throws Exception {
+    /**
+     *
+     * @param instance
+     * @param clazz
+     * @return -1 0 1 cglib 普通 jdk
+     * @throws Exception
+     */
+    private HashMap aopProcessor(Object instance, Class<?> clazz) throws Exception {
         AdvisedSupport advisedSupport = new AdvisedSupport();
         advisedSupport.setConfigHolder(aopConfigHolder);
         advisedSupport.setTargetClass(clazz); // 低层解析拦截器链 切人点
         advisedSupport.setTarget(instance);
+        int proxyType = 0;
         boolean isAop = advisedSupport.pointCutMatch(); // 是否匹配切入点表达式
+        HashMap<String, Object> map = new HashMap<String, Object> ();
         if (isAop) {
             // 先加入aop
             Class<?>[] interfaces = clazz.getInterfaces();
             AopProxy proxy = null;
             if (interfaces == null || interfaces.length == 0) {
                 proxy = new CglibAopProxy(advisedSupport);
+                proxyType = -1;
             } else {
                 proxy = new JdkAopProxy(advisedSupport);
+                proxyType = 1;
             }
             instance = proxy.getProxy();
+
         }
-        return instance;
+
+        map.put("proxyType",proxyType);
+        map.put("proxy",instance);
+
+        return map;
     }
 
 

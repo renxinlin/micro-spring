@@ -54,6 +54,10 @@ public class AdvisedSupport {
      * method和method对应的拦截器链路
      */
     private transient Map<Method, List<Advice>> methodAndMethodInterceptors = new ConcurrentHashMap<> ();
+
+    /**
+     * 临时的链路记录
+     */
     private transient Map<String, List<Advice>> pointCutAndMethodInterceptors= new ConcurrentHashMap<> ();
     private transient Map<String, String> pointcutAndMethod= new ConcurrentHashMap<> ();
 
@@ -198,7 +202,7 @@ public class AdvisedSupport {
                     if(methodInterceptors == null){
                         methodInterceptors = new ArrayList<Advice> ();
                     }
-                    String method = pointcutAndMethod.get(package_);
+                    String method = pointcutAndMethod.get("@package("+package_+")");
                     List<Advice> interceptors = pointCutAndMethodInterceptors.get(method);
                     methodInterceptors.addAll(interceptors);
                     methodAndMethodInterceptors.put(targetMethod,methodInterceptors);
@@ -220,7 +224,7 @@ public class AdvisedSupport {
                         if(methodInterceptors == null){
                             methodInterceptors = new ArrayList ();
                         }
-                        List<Advice> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get(annotation));
+                        List<Advice> interceptors = pointCutAndMethodInterceptors.get(pointcutAndMethod.get("@annotation("+annotation+")"));
                         methodInterceptors.addAll(interceptors);
                         methodAndMethodInterceptors.put(targetMethod,methodInterceptors);
 
@@ -237,7 +241,7 @@ public class AdvisedSupport {
 
     private void aspectResolver(Method[] methods, Object instance) {
         for (Method method : methods) {
-            String pointCutMethodName = "";
+            String pointCutMethodName = method.getDeclaringClass().getName();
             After after =  method.getAnnotation(After.class);
             AfterReturning afterReturn = method.getAnnotation(AfterReturning.class);
             AfterThrowing afterThrowing = method.getAnnotation(AfterThrowing.class);
@@ -250,29 +254,29 @@ public class AdvisedSupport {
                 existAdviceMethod = true;
                 advice = new AfterAdvice(method, instance,after.priority());
 
-                pointCutMethodName = after.value();
+                pointCutMethodName = pointCutMethodName + after.value();
 
             }
             if (afterReturn != null) {
                 existAdviceMethod = true;
                 advice = new AfterReturnAdvice(method, instance,afterReturn.priority());
-                pointCutMethodName = afterReturn.value();
+                pointCutMethodName =  pointCutMethodName + afterReturn.value();
 
             }
             if (afterThrowing != null) {
                 existAdviceMethod = true;
                 advice = new AfterThrowingAdvice(method, instance,afterThrowing.priority());
-                pointCutMethodName = afterThrowing.value();
+                pointCutMethodName =  pointCutMethodName + afterThrowing.value();
             }
             if (around != null) {
                 existAdviceMethod = true;
                 advice = new AroundAdvice(method, instance,around.priority());
-                pointCutMethodName = around.value();
+                pointCutMethodName =  pointCutMethodName + around.value();
             }
             if (before != null) {
                 existAdviceMethod = true;
                 advice = new BeforeAdvice(method, instance,before.priority());
-                pointCutMethodName = before.value();
+                pointCutMethodName =  pointCutMethodName + before.value();
             }
 
             if (existAdviceMethod) {
