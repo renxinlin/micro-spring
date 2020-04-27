@@ -1,6 +1,8 @@
 package com.renxl.club.spring.framework.aop.aoproxy;
 
 import com.renxl.club.spring.framework.aop.aspect.Advice;
+import com.renxl.club.spring.framework.aop.aspect.AfterAdvice;
+import com.renxl.club.spring.framework.aop.interceptor.MethodInterceptor;
 import com.renxl.club.spring.framework.aop.interceptor.MethodInvocation;
 import com.renxl.club.spring.framework.aop.support.AdvisedSupport;
 
@@ -10,6 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Author renxl
@@ -33,8 +36,20 @@ public class JdkAopProxy implements InvocationHandler, AopProxy {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         List<Advice> interceptors = this.advisedSupport.getAllAdvices(method, this.advisedSupport.getTargetClass());
-        MethodInvocation methodInvocation = new MethodInvocation(method, advisedSupport.getTarget(), args, interceptors, advisedSupport.getTargetClass(), new HashMap());
-        return methodInvocation.proceed();
+        List<Advice> notAfter = interceptors.stream().filter(interceptor -> !(interceptor instanceof AfterAdvice)).collect(Collectors.toList());
+        List<Advice> after = interceptors.stream().filter(interceptor -> interceptor instanceof AfterAdvice).collect(Collectors.toList());
+        MethodInvocation methodInvocation = new MethodInvocation(method, advisedSupport.getTarget(),args,notAfter,after,advisedSupport.getTargetClass(),new HashMap());
+        Object proceed = methodInvocation.proceed();
+
+        for(Advice advise:after) {
+
+            if (advise instanceof MethodInterceptor) {
+                MethodInterceptor methodInterceptor = (MethodInterceptor) advise;
+                methodInterceptor.execute(methodInvocation);
+            }
+        }
+        return proceed;
+
     }
 
     @Override

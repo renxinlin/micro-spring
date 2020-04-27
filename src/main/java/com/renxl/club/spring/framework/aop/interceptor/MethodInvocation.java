@@ -20,13 +20,14 @@ public class MethodInvocation implements JoinPoint {
 
 
 
-    public MethodInvocation(Method method, Object target, Object[] arguments, List<Advice> interceptorsAndDynamicMethodMatchers, Class<?> targetClass, Map<String, Object> attributes) {
+    public MethodInvocation(Method method, Object target, Object[] arguments, List<Advice> interceptorsAndDynamicMethodMatchers, List<Advice> after, Class<?> targetClass, Map<String, Object> attributes) {
         this.method = method;
         this.target = target;
         this.arguments = arguments;
         this.interceptorsAndDynamicMethodMatchers = interceptorsAndDynamicMethodMatchers;
         this.targetClass = targetClass;
         this.attributes = attributes;
+        this.after = after;
     }
 
 
@@ -37,6 +38,7 @@ public class MethodInvocation implements JoinPoint {
     private Object [] arguments;
 
     private List<Advice> interceptorsAndDynamicMethodMatchers;
+    private List<Advice> after;
 
     private Class<?> targetClass;
 
@@ -132,17 +134,23 @@ public class MethodInvocation implements JoinPoint {
     public Object proceed() throws Throwable {
         // 我们将 handlerinvocation的功能抽象到这里，并采用递归调用的方式直到目标方法和拦截器链全部执行完毕
         // currentInterceptorIndex  list是按照顺序排好的
-        if(this.interceptorsAndDynamicMethodMatchers != null &&  currentInterceptorIndex < interceptorsAndDynamicMethodMatchers.size()){
+        Object object = null;
+        if (this.interceptorsAndDynamicMethodMatchers != null && currentInterceptorIndex < interceptorsAndDynamicMethodMatchers.size()) {
             Object o = this.interceptorsAndDynamicMethodMatchers.get(currentInterceptorIndex);
             currentInterceptorIndex++;
-            if(o instanceof MethodInterceptor){
+            if (o instanceof MethodInterceptor) {
                 MethodInterceptor methodInterceptor = (MethodInterceptor) o;
                 methodInterceptor.execute(this);
-            }else {
+            } else {
                 // 这里不大可能，只有出现不匹配的时候，通过currentInterceptorIndex++跳过这一个;
                 proceed();
             }
+        }else {
+            object =  method.invoke(target, arguments);
         }
-        return method.invoke(target,arguments);
+
+        return object;
     }
 }
+
+

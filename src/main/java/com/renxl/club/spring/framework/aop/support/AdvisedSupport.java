@@ -176,7 +176,7 @@ public class AdvisedSupport {
             sortAdvices.addAll(afterReturnAdvices);
             sortAdvices.addAll(afterThrowingAdvices);
             sortAdvices.addAll(afterAdvices);
-            methodAndMethodInterceptors.put(methodListEntry.getKey(),sortAdvices);
+            sortedMethodAndMethodInterceptors.put(methodListEntry.getKey(),sortAdvices);
 
         }
         methodAndMethodInterceptors = sortedMethodAndMethodInterceptors;

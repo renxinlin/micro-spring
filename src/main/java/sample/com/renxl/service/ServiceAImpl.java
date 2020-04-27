@@ -18,7 +18,7 @@ public class ServiceAImpl implements ServiceA {
     private ServiceC servicec;
     @Override
     public String say() {
-        servicec.eat();
+//        servicec.eat();
         return "say";
     }
 }
